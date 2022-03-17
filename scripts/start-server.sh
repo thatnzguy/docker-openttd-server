@@ -1,17 +1,11 @@
 #!/bin/bash
 CUR_V="$(find ${SERVER_DIR} -name installed_v_* | cut -d "_" -f3)"
-if [ "${GAME_VERSION}" = "latest" ]; then
-  echo "---Trying to get latest stable OpenTTD version...---"
-  LAT_V="$(curl -s https://cdn.openttd.org/openttd-releases/latest.yaml | grep -B1 "stable" | grep "version:" | cut -d ' ' -f3)"
-  if [ ! -z ${LAT_V} ]; then
-    echo "---Latest stable OpenTTD version is: $LAT_V---"
-  fi
-elif [ "${GAME_VERSION}" = "testing" ]; then
-  echo "---Trying to get latest testing OpenTTD version...---"
-  LAT_V="$(curl -s https://cdn.openttd.org/openttd-releases/latest.yaml | grep -B1 "testing" | grep "version:" | cut -d ' ' -f3)"
-  if [ ! -z ${LAT_V} ]; then
-    echo "---Latest testing OpenTTD version is: $LAT_V---"
-  fi
+#Check latest version available
+LAT_V="$(curl -s https://api.github.com/repos/JGRennison/OpenTTD-patches/releases/latest | grep tag_name | cut -d '"' -f4)"
+if [ -z $LAT_V ]; then				#ref https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php and https://stackoverflow.com/questions/18096670/what-does-z-mean-in-bash and https://tldp.org/LDP/abs/html/comparison-ops.html
+	echo "Error:  Could not determine latest available version.  Is the server able to access the internet, or has the source file on github moved or been changed?  If latest was selected during container setup, the build will fail.  Enter a game version manually in the interim, i.e. jgrpp-0.38.0"
+else
+	echo "Latest available: $LAT_V"
 fi
 
 if [ -z $LAT_V ]; then
@@ -55,7 +49,8 @@ if [ ! -f ${SERVER_DIR}/openttd ]; then
   echo "-----and installing v$LAT_V-----"
   echo "-------------------------------------"
   cd ${SERVER_DIR}
-  if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/installed_v_${LAT_V} https://cdn.openttd.org/openttd-releases/${LAT_V}/openttd-${LAT_V}-linux-generic-amd64.tar.xz ; then
+  #https://github.com/JGRennison/OpenTTD-patches/releases/download/jgrpp-0.47.0/openttd-jgrpp-0.47.0-linux-generic-amd64.tar.xz
+  if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/installed_v_${LAT_V} https://github.com/JGRennison/OpenTTD-patches/releases/download/${LAT_V}/openttd-${LAT_V}-linux-generic-amd64.tar.xz ; then
     echo "---Successfully downloaded OpenTTD v$LAT_V---"
   else
     echo "---Can't download OpenTTD v$LAT_V putting server into sleep mode---"
@@ -70,7 +65,7 @@ elif [ "$LAT_V" != "$CUR_V" ]; then
   echo
   cd ${SERVER_DIR}
   rm -rf ${SERVER_DIR}/installed_v_*
-  if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/installed_v_${LAT_V} https://cdn.openttd.org/openttd-releases/${LAT_V}/openttd-${LAT_V}-linux-generic-amd64.tar.xz ; then
+  if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/installed_v_${LAT_V} https://github.com/JGRennison/OpenTTD-patches/releases/download/${LAT_V}/openttd-${LAT_V}-linux-generic-amd64.tar.xz ; then
     echo "---Successfully downloaded OpenTTD v$LAT_V---"
   else
     echo "---Can't download OpenTTD v$LAT_V putting server into sleep mode---"
