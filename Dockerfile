@@ -34,5 +34,9 @@ RUN mkdir $DATA_DIR && \
 ADD /scripts/ /opt/scripts/
 RUN chmod -R 770 /opt/scripts/
 
+RUN apt-get update
+RUN apt-get install dos2unix
+RUN dos2unix "/opt/scripts/start.sh"
+
 #Server Start
 ENTRYPOINT ["/opt/scripts/start.sh"]
